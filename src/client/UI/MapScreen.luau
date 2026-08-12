@@ -3,16 +3,20 @@
 -- Beta zones are interactable; post-beta zones are "coming soon" placeholders.
 -- Lives in StarterPlayerScripts.Client.UI.MapScreen
 --
+-- Figma style: framed panel with gold title, legend row, dark map area with a
+-- stylized landmass and diamond pin markers. Supports variants A/B/C.
 -- Press M to open. Click a beta shrine to fast-travel.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 
+local Theme = require(script.Parent:WaitForChild("Theme"))
 local UiUtil = require(script.Parent:WaitForChild("UiUtil"))
 
 local MapScreen = {}
 
 local gui
+local style = Theme.GetVariant(Theme.DefaultVariant)
 local shrineButtons = {} :: { [string]: TextButton }
 
 -- All planned locations. status: "active" (beta), "coming" (post-beta, locked), "future" (season 5+, locked)
@@ -64,15 +68,9 @@ local LOCATIONS = {
 }
 
 local STATUS_COLORS = {
-	active = Color3.fromRGB(180, 220, 180),
+	active = Theme.Colors.AccentGold,
 	coming = Color3.fromRGB(140, 140, 160),
 	future = Color3.fromRGB(80, 80, 100),
-}
-
-local STATUS_PREFIX = {
-	active = "",
-	coming = "🔒 ",
-	future = "🔮 ",
 }
 
 local function build()
@@ -82,48 +80,69 @@ local function build()
 
 	local panel = UiUtil.makeFrame(
 		"Panel",
-		UDim2.new(0.85, 0,  0.85, 0),
+		UDim2.new(0.85, 0, 0.85, 0),
 		UDim2.new(0.075, 0, 0.075, 0),
-		Color3.fromRGB(25, 25, 40),
+		style.Panel,
 		overlay
 	)
+	UiUtil.applyPanelStyle(panel, style)
 
-	UiUtil.makeLabel("Title", "MAP OF OOO", UDim2.new(1, 0, 0.06, 0), UDim2.new(0, 0, 0.02, 0), Color3.fromRGB(255, 255, 255), panel, Enum.Font.GothamBlack)
-
-	local closeBtn = UiUtil.makeButton("Close", "X", UDim2.new(0.04, 0, 0.05, 0), UDim2.new(0.95, 0, 0.015, 0), Color3.fromRGB(200, 80, 80), panel)
-	closeBtn.MouseButton1Click:Connect(function()
+	UiUtil.makeTitleBar(panel, "MAP OF OOO", style, function()
 		MapScreen.Hide()
 	end)
 
 	-- Legend
-	local legend = UiUtil.makeFrame("Legend", UDim2.new(0.4, 0, 0.05, 0), UDim2.new(0.03, 0, 0.10, 0), Color3.fromRGB(20, 20, 30), panel)
-	UiUtil.makeLabel("LegendActive", "● Active", UDim2.new(0.33, 0, 1, 0), UDim2.new(0, 0, 0, 0), STATUS_COLORS.active, legend, Enum.Font.GothamBold)
-	UiUtil.makeLabel("LegendComing", "● Coming Soon", UDim2.new(0.33, 0, 1, 0), UDim2.new(0.33, 0, 0, 0), STATUS_COLORS.coming, legend, Enum.Font.GothamBold)
-	UiUtil.makeLabel("LegendFuture", "● Future", UDim2.new(0.33, 0, 1, 0), UDim2.new(0.66, 0, 0, 0), STATUS_COLORS.future, legend, Enum.Font.GothamBold)
+	local legend = UiUtil.makeFrame("Legend", UDim2.new(0.4, 0, 0.05, 0), UDim2.new(0.03, 0, 0.11, 0), style.PanelAlt, panel)
+	UiUtil.applyPanelStyle(legend, style)
+	legend.BackgroundColor3 = style.PanelAlt
 
-	-- Map area
-	local mapArea = UiUtil.makeFrame("MapArea", UDim2.new(0.94, 0, 0.78, 0), UDim2.new(0.03, 0, 0.18, 0), Color3.fromRGB(80, 130, 80), panel)
+	UiUtil.makeLabel("LegendActive", "● Active", UDim2.new(0.33, 0, 1, 0), UDim2.new(0, 0, 0, 0), STATUS_COLORS.active, legend, Theme.Fonts.Header)
+	UiUtil.makeLabel("LegendComing", "● Coming Soon", UDim2.new(0.33, 0, 1, 0), UDim2.new(0.33, 0, 0, 0), STATUS_COLORS.coming, legend, Theme.Fonts.Header)
+	UiUtil.makeLabel("LegendFuture", "● Future", UDim2.new(0.33, 0, 1, 0), UDim2.new(0.66, 0, 0, 0), STATUS_COLORS.future, legend, Theme.Fonts.Header)
+
+	-- Map area (placeholder: dark sea + stylized landmass block)
+	local mapArea = UiUtil.makeFrame("MapArea", UDim2.new(0.94, 0, 0.76, 0), UDim2.new(0.03, 0, 0.19, 0), Color3.fromRGB(24, 34, 52), panel)
+	UiUtil.applyPanelStyle(mapArea, style)
+	mapArea.BackgroundColor3 = Color3.fromRGB(24, 34, 52)
 
 	-- Stylized "Ooo" shape (placeholder — a long horizontal landmass)
-	local landmass = UiUtil.makeFrame("Landmass", UDim2.new(0.9, 0, 0.5, 0), UDim2.new(0.05, 0, 0.25, 0), Color3.fromRGB(140, 180, 110), mapArea)
-	landmass.BackgroundTransparency = 0.3
+	local landmass = UiUtil.makeFrame("Landmass", UDim2.new(0.9, 0, 0.5, 0), UDim2.new(0.05, 0, 0.25, 0), Color3.fromRGB(52, 66, 58), mapArea)
+	landmass.BackgroundTransparency = 0.2
 
-	-- Location buttons
+	-- Location pins: diamond marker + name label
 	for _, loc in ipairs(LOCATIONS) do
 		local color = STATUS_COLORS[loc.status]
-		local prefix = STATUS_PREFIX[loc.status]
-		local btn = UiUtil.makeButton(
-			loc.id,
-			prefix .. loc.name,
-			UDim2.new(0.13, 0, 0.05, 0),
-			UDim2.new(loc.x - 0.065, 0, loc.y - 0.025, 0),
+
+		local pin = Instance.new("TextButton")
+		pin.Name = loc.id
+		pin.Size = UDim2.fromOffset(18, 18)
+		pin.AnchorPoint = Vector2.new(0.5, 0.5)
+		pin.Position = UDim2.fromScale(loc.x, loc.y)
+		pin.Rotation = 45
+		pin.BackgroundColor3 = color
+		pin.BorderSizePixel = 0
+		pin.Text = ""
+		pin.AutoButtonColor = loc.status == "active"
+		pin.Parent = mapArea
+
+		local pinStroke = Instance.new("UIStroke")
+		pinStroke.Color = Theme.Colors.PanelDark
+		pinStroke.Thickness = 1
+		pinStroke.Transparency = 0.3
+		pinStroke.Parent = pin
+
+		local nameLabel = UiUtil.makeLabel(
+			"Label",
+			loc.name,
+			UDim2.new(0.14, 0, 0.04, 0),
+			UDim2.new(loc.x - 0.07, 0, loc.y + 0.025, 0),
 			color,
-			mapArea
+			mapArea,
+			Theme.Fonts.Body
 		)
-		if loc.status ~= "active" then
-			btn.Text = prefix .. loc.name .. " (S" .. loc.season .. ")"
-		end
-		btn.MouseButton1Click:Connect(function()
+		nameLabel.TextStrokeTransparency = 0.6
+
+		pin.MouseButton1Click:Connect(function()
 			if loc.status == "active" then
 				local c2s = ReplicatedStorage:FindFirstChild("ClientToServer")
 				if c2s and c2s:IsA("RemoteEvent") then
@@ -132,38 +151,54 @@ local function build()
 				MapScreen.Hide()
 			else
 				-- Show "coming soon" feedback
-				btn.Text = "Coming in " .. loc.season
+				nameLabel.Text = loc.name .. " (" .. loc.season .. ")"
 				task.delay(1.5, function()
-					btn.Text = prefix .. loc.name .. " (S" .. loc.season .. ")"
+					if nameLabel.Parent then
+						nameLabel.Text = loc.name
+					end
 				end)
 			end
 		end)
-		shrineButtons[loc.id] = btn
+
+		shrineButtons[loc.id] = pin
 	end
 
 	gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 	gui.Enabled = false
 end
 
+-- Initialize with a visual variant ("A" | "B" | "C"). Rebuilds if variant changes.
+function MapScreen.Init(variant: string?)
+	local newStyle = Theme.GetVariant(variant)
+	if gui and newStyle == style then
+		return
+	end
+	style = newStyle
+	if gui then
+		gui:Destroy()
+		gui = nil
+	end
+	build()
+end
+
 function MapScreen.UnlockShrine(shrineId: string)
-	local btn = shrineButtons[shrineId]
-	if btn then
-		-- Find the location
-		for _, loc in ipairs(LOCATIONS) do
-			if loc.id == shrineId then
-				loc.status = "active"
-			end
-		end
-		if btn then
-			btn.BackgroundColor3 = STATUS_COLORS.active
-			btn.Text = btn.Text:gsub("🔒 ", "")
+	local pin = shrineButtons[shrineId]
+	if not pin then
+		return
+	end
+	for _, loc in ipairs(LOCATIONS) do
+		if loc.id == shrineId then
+			loc.status = "active"
+			pin.BackgroundColor3 = STATUS_COLORS.active
+			pin.AutoButtonColor = true
+			break
 		end
 	end
 end
 
 function MapScreen.Show()
 	if not gui then
-		build()
+		MapScreen.Init()
 	end
 	gui.Enabled = true
 end

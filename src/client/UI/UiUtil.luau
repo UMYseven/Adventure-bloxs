@@ -95,4 +95,90 @@ function UiUtil.makeOverlay(parent: Instance): Frame
 	return overlay
 end
 
+-- Apply a variant style (from Theme.GetVariant) to a panel frame:
+-- background color, corner radius, and a gold UIStroke border when the
+-- variant calls for one (B = thin/faded, C = thick/solid, A = none).
+function UiUtil.applyPanelStyle(frame: GuiObject, style: any)
+	frame.BackgroundColor3 = style.Panel
+
+	local corner = frame:FindFirstChildOfClass("UICorner")
+	if not corner then
+		corner = Instance.new("UICorner")
+		corner.Parent = frame
+	end
+	corner.CornerRadius = style.CornerRadius
+
+	local stroke = frame:FindFirstChildOfClass("UIStroke")
+	if style.BorderThickness > 0 then
+		if not stroke then
+			stroke = Instance.new("UIStroke")
+			stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+			stroke.Parent = frame
+		end
+		stroke.Color = style.Border
+		stroke.Thickness = style.BorderThickness
+		stroke.Transparency = style.BorderTransparency
+	elseif stroke then
+		stroke:Destroy()
+	end
+end
+
+-- Small rotated gold square used as an ornate corner accent (variant C).
+local function makeGem(parent: Instance, xScale: number, yScale: number, size: number, color: Color3)
+	local gem = Instance.new("Frame")
+	gem.Name = "Gem"
+	gem.Size = UDim2.fromOffset(size, size)
+	gem.AnchorPoint = Vector2.new(0.5, 0.5)
+	gem.Position = UDim2.fromScale(xScale, yScale)
+	gem.Rotation = 45
+	gem.BackgroundColor3 = color
+	gem.BorderSizePixel = 0
+	gem.Parent = parent
+end
+
+-- Standard screen header: centered gold title, red X close button, plus the
+-- variant's extras (gold underline for B/C, corner gems for C).
+function UiUtil.makeTitleBar(panel: Instance, title: string, style: any, onClose: (() -> ())?)
+	UiUtil.makeLabel(
+		"Title",
+		title,
+		UDim2.new(0.6, 0, 0.08, 0),
+		UDim2.new(0.2, 0, 0.02, 0),
+		style.TitleColor,
+		panel,
+		Theme.Fonts.Title
+	)
+
+	if style.Underline then
+		local line = Instance.new("Frame")
+		line.Name = "TitleUnderline"
+		line.Size = UDim2.new(0.34, 0, 0.006, 0)
+		line.Position = UDim2.new(0.33, 0, 0.095, 0)
+		line.BackgroundColor3 = style.Accent
+		line.BorderSizePixel = 0
+		line.Parent = panel
+
+		local lineCorner = Instance.new("UICorner")
+		lineCorner.CornerRadius = UDim.new(0.5, 0)
+		lineCorner.Parent = line
+	end
+
+	if style.Decorations then
+		makeGem(panel, 0.03, 0.045, 10, style.Accent)
+		makeGem(panel, 0.97, 0.045, 10, style.Accent)
+	end
+
+	if onClose then
+		local closeBtn = UiUtil.makeButton(
+			"Close",
+			"X",
+			UDim2.new(0.06, 0, 0.055, 0),
+			UDim2.new(0.915, 0, 0.02, 0),
+			Theme.Colors.AccentRed,
+			panel
+		)
+		closeBtn.MouseButton1Click:Connect(onClose)
+	end
+end
+
 return UiUtil

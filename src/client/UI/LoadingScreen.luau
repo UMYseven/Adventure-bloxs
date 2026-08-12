@@ -5,75 +5,95 @@
 -- Flow: Player joins → LoadingScreen shows → ContentProvider preloads all assets →
 --   LoadingScreen fades → RNGScreen shows (if firstSpawn) → player spawns in Candy Kingdom.
 --
--- Placeholder visuals: dark background + logo + progress bar + status text.
+-- Figma style: full-screen dark background, gold title, gold progress bar.
+-- Supports variants A (minimal), B (medium frame), C (ornate frame + gems).
+-- Placeholder visuals: colored frames + text. Real art swapped in later.
 
 local Players = game:GetService("Players")
 local ContentProvider = game:GetService("ContentProvider")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Theme = require(script.Parent:WaitForChild("Theme"))
+local UiUtil = require(script.Parent:WaitForChild("UiUtil"))
+
 local LoadingScreen = {}
 
 local gui
+local style = Theme.GetVariant(Theme.DefaultVariant)
 local progressFill
 local progressLabel
 local statusLabel
 
 local function build()
-	gui = Instance.new("ScreenGui")
-	gui.Name = "LoadingScreen"
-	gui.IgnoreGuiInset = true
-	gui.ResetOnSpawn = false
-	gui.DisplayOrder = 200 -- above everything else
+	gui = UiUtil.makeScreenGui("LoadingScreen", 200) -- above everything else
 
 	local bg = Instance.new("Frame")
 	bg.Name = "Background"
 	bg.Size = UDim2.fromScale(1, 1)
-	bg.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+	bg.BackgroundColor3 = Theme.Colors.Background
 	bg.BorderSizePixel = 0
 	bg.Parent = gui
 
+	-- Center card holding logo + progress (framed per variant B/C)
+	local card = UiUtil.makeFrame(
+		"Card",
+		UDim2.new(0.6, 0, 0.5, 0),
+		UDim2.new(0.2, 0, 0.22, 0),
+		style.Panel,
+		bg
+	)
+	UiUtil.applyPanelStyle(card, style)
+	-- Variant A has no border/decorations: keep the card invisible (bare text)
+	if style.BorderThickness == 0 and not style.Decorations then
+		card.BackgroundTransparency = 1
+	end
+
 	-- Logo placeholder
-	local logo = Instance.new("TextLabel")
-	logo.Name = "Logo"
-	logo.Size = UDim2.new(0.6, 0, 0.15, 0)
-	logo.Position = UDim2.new(0.2, 0, 0.15, 0)
-	logo.BackgroundTransparency = 1
-	logo.Font = Enum.Font.GothamBlack
-	logo.Text = "ADVENTURE TIME: OOO"
-	logo.TextColor3 = Color3.fromRGB(255, 200, 80)
-	logo.TextScaled = true
-	logo.Parent = bg
+	UiUtil.makeLabel(
+		"Logo",
+		"ADVENTURE TIME: OOO",
+		UDim2.new(0.9, 0, 0.3, 0),
+		UDim2.new(0.05, 0, 0.06, 0),
+		style.TitleColor,
+		card,
+		Theme.Fonts.Title
+	)
 
 	-- Subtitle
-	local subtitle = Instance.new("TextLabel")
-	subtitle.Name = "Subtitle"
-	subtitle.Size = UDim2.new(0.6, 0, 0.08, 0)
-	subtitle.Position = UDim2.new(0.2, 0, 0.32, 0)
-	subtitle.BackgroundTransparency = 1
-	subtitle.Font = Enum.Font.GothamMedium
-	subtitle.Text = "The timeline has fractured..."
-	subtitle.TextColor3 = Color3.fromRGB(200, 200, 220)
-	subtitle.TextScaled = true
-	subtitle.Parent = bg
+	UiUtil.makeLabel(
+		"Subtitle",
+		"The timeline has fractured...",
+		UDim2.new(0.9, 0, 0.14, 0),
+		UDim2.new(0.05, 0, 0.36, 0),
+		Theme.Colors.TextSecondary,
+		card,
+		Theme.Fonts.Body
+	)
 
 	-- Progress bar background
-	local progressBg = Instance.new("Frame")
-	progressBg.Name = "ProgressBg"
-	progressBg.Size = UDim2.new(0.5, 0, 0.04, 0)
-	progressBg.Position = UDim2.new(0.25, 0, 0.5, 0)
-	progressBg.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
-	progressBg.BorderSizePixel = 0
-	progressBg.Parent = bg
-
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0.5, 0)
-	corner.Parent = progressBg
+	local progressBg = UiUtil.makeFrame(
+		"ProgressBg",
+		UDim2.new(0.8, 0, 0.1, 0),
+		UDim2.new(0.1, 0, 0.56, 0),
+		Theme.Colors.PanelDark,
+		card
+	)
+	local barCorner = Instance.new("UICorner")
+	barCorner.CornerRadius = UDim.new(0.5, 0)
+	barCorner.Parent = progressBg
+	if style.BorderThickness > 0 then
+		local barStroke = Instance.new("UIStroke")
+		barStroke.Color = style.Border
+		barStroke.Thickness = 1
+		barStroke.Transparency = style.BorderTransparency
+		barStroke.Parent = progressBg
+	end
 
 	-- Progress bar fill
 	progressFill = Instance.new("Frame")
 	progressFill.Name = "Fill"
 	progressFill.Size = UDim2.fromScale(0, 1)
-	progressFill.BackgroundColor3 = Color3.fromRGB(255, 180, 80)
+	progressFill.BackgroundColor3 = Theme.Colors.AccentGold
 	progressFill.BorderSizePixel = 0
 	progressFill.Parent = progressBg
 
@@ -82,28 +102,41 @@ local function build()
 	fillCorner.Parent = progressFill
 
 	-- Progress label
-	progressLabel = Instance.new("TextLabel")
-	progressLabel.Name = "Progress"
-	progressLabel.Size = UDim2.new(0.5, 0, 0.03, 0)
-	progressLabel.Position = UDim2.new(0.25, 0, 0.56, 0)
-	progressLabel.BackgroundTransparency = 1
-	progressLabel.Font = Enum.Font.GothamBold
-	progressLabel.Text = "Loading... 0%"
-	progressLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-	progressLabel.TextScaled = true
-	progressLabel.Parent = bg
+	progressLabel = UiUtil.makeLabel(
+		"Progress",
+		"Loading... 0%",
+		UDim2.new(0.8, 0, 0.08, 0),
+		UDim2.new(0.1, 0, 0.68, 0),
+		Theme.Colors.TextPrimary,
+		card,
+		Theme.Fonts.Header
+	)
 
 	-- Status label (what's currently loading)
-	statusLabel = Instance.new("TextLabel")
-	statusLabel.Name = "Status"
-	statusLabel.Size = UDim2.new(0.6, 0, 0.04, 0)
-	statusLabel.Position = UDim2.new(0.2, 0, 0.62, 0)
-	statusLabel.BackgroundTransparency = 1
-	statusLabel.Font = Enum.Font.GothamMedium
-	statusLabel.Text = "Initializing..."
-	statusLabel.TextColor3 = Color3.fromRGB(180, 180, 200)
-	statusLabel.TextScaled = true
-	statusLabel.Parent = bg
+	statusLabel = UiUtil.makeLabel(
+		"Status",
+		"Initializing...",
+		UDim2.new(0.8, 0, 0.08, 0),
+		UDim2.new(0.1, 0, 0.78, 0),
+		Theme.Colors.TextMuted,
+		card,
+		Theme.Fonts.Body
+	)
+
+	-- Ornate corner gems on the card (variant C)
+	if style.Decorations then
+		for _, pos in ipairs({ { 0.02, 0.06 }, { 0.98, 0.06 }, { 0.02, 0.94 }, { 0.98, 0.94 } }) do
+			local gem = Instance.new("Frame")
+			gem.Name = "Gem"
+			gem.Size = UDim2.fromOffset(12, 12)
+			gem.AnchorPoint = Vector2.new(0.5, 0.5)
+			gem.Position = UDim2.fromScale(pos[1], pos[2])
+			gem.Rotation = 45
+			gem.BackgroundColor3 = style.Accent
+			gem.BorderSizePixel = 0
+			gem.Parent = card
+		end
+	end
 
 	gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
 end
@@ -125,11 +158,27 @@ local function setStatus(text: string)
 	end
 end
 
+-- Initialize with a visual variant ("A" | "B" | "C"). Rebuilds if variant changes.
+function LoadingScreen.Init(variant: string?)
+	local newStyle = Theme.GetVariant(variant)
+	if gui and newStyle == style then
+		return
+	end
+	style = newStyle
+	if gui then
+		gui:Destroy()
+		gui = nil
+	end
+	build()
+	gui.Enabled = false
+end
+
 -- Main preload function — loads all assets, then hides
 function LoadingScreen.PreloadAll(onComplete: () -> ())
 	if not gui then
-		build()
+		LoadingScreen.Init()
 	end
+	gui.Enabled = true
 
 	setStatus("Preparing Ooo...")
 	setProgress(0)
@@ -197,7 +246,7 @@ end
 
 function LoadingScreen.Show()
 	if not gui then
-		build()
+		LoadingScreen.Init()
 	end
 	gui.Enabled = true
 end

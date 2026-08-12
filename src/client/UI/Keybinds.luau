@@ -1,5 +1,5 @@
 --!strict
--- Keybinds — UI key bindings (M = map, I = inventory, J = quest log, Esc = pause, F = settings).
+-- Keybinds — UI key bindings (M = map, I = inventory, J = quest log, K = talent tree, Esc = pause, F = settings).
 -- Lives in StarterPlayerScripts.Client.UI.Keybinds
 --
 -- Combat keys (LMB/RMB/Space/Shift/Q/E/R) are handled in Input/Init, NOT here.
@@ -36,12 +36,14 @@ function Keybinds.Init()
 			openEvent:Fire("QuestLog")
 		elseif key == Enum.KeyCode.F then
 			openEvent:Fire("Settings")
+		elseif key == Enum.KeyCode.K then
+			openEvent:Fire("TalentTree")
 		elseif key == Enum.KeyCode.P then
 			openEvent:Fire("Founder")
 		end
 	end)
 
-	print("[Keybinds] initialized — M=Map, I=Inventory, J=QuestLog, F=Settings, P=Founder, Esc=Pause")
+	print("[Keybinds] initialized — M=Map, I=Inventory, J=QuestLog, F=Settings, K=Talents, P=Founder, Esc=Pause")
 end
 
 return Keybinds

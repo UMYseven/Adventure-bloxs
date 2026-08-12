@@ -72,6 +72,10 @@ end
 local function safeShowLoading()
 	if LoadingScreen then
 		pcall(function()
+			-- Build with the default Figma variant before first show
+			if type(LoadingScreen.Init) == "function" then
+				LoadingScreen.Init("B")
+			end
 			LoadingScreen.Show()
 		end)
 	end

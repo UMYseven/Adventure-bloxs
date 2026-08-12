@@ -25,7 +25,8 @@ local localData = {
 }
 
 function HUD.Init()
-	-- Show HUD on spawn
+	-- Build the HUD with the default Figma variant, then show it
+	HUDGui.Init("B")
 	HUDGui.Show()
 
 	-- Initial values

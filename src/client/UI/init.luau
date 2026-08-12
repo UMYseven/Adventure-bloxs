@@ -4,6 +4,7 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local Theme = require(script:WaitForChild("Theme"))
 local RNGScreen = require(script:WaitForChild("RNGScreen"))
 local PauseMenu = require(script:WaitForChild("PauseMenu"))
 local Keybinds = require(script:WaitForChild("Keybinds"))
@@ -12,6 +13,7 @@ local QuestLogScreen = require(script:WaitForChild("QuestLogScreen"))
 local SettingsScreen = require(script:WaitForChild("SettingsScreen"))
 local MapScreen = require(script:WaitForChild("MapScreen"))
 local DialogScreen = require(script:WaitForChild("DialogScreen"))
+local TalentTreeScreen = require(script:WaitForChild("TalentTreeScreen"))
 local ShopScreen = require(script:WaitForChild("ShopScreen"))
 local DuelScreen = require(script:WaitForChild("DuelScreen"))
 local DeathScreen = require(script:WaitForChild("DeathScreen"))
@@ -20,7 +22,10 @@ local LichFinaleScreen = require(script:WaitForChild("LichFinaleScreen"))
 
 local UI = {}
 
-function UI.Init()
+function UI.Init(variant: string?)
+	-- Visual variant for all Figma-based screens ("A" | "B" | "C")
+	local v = variant or Theme.DefaultVariant
+
 	-- Create the OpenUIScreen BindableEvent if missing
 	if not ReplicatedStorage:FindFirstChild("OpenUIScreen") then
 		local ev = Instance.new("BindableEvent")
@@ -29,10 +34,18 @@ function UI.Init()
 	end
 	local openEvent = ReplicatedStorage:WaitForChild("OpenUIScreen")
 
+	-- Build the Figma-based screens (hidden until shown)
+	InventoryScreen.Init(v)
+	QuestLogScreen.Init(v)
+	SettingsScreen.Init(v)
+	MapScreen.Init(v)
+	DialogScreen.Init(v)
+	TalentTreeScreen.Init(v)
+
 	-- Pause menu (Esc) initializes its own input hook
 	PauseMenu.Init()
 
-	-- UI keybinds (M=Map, I=Inventory, J=QuestLog, F=Settings, P=Founder)
+	-- UI keybinds (M=Map, I=Inventory, J=QuestLog, F=Settings, K=Talents, P=Founder)
 	Keybinds.Init()
 
 	-- Dispatch OpenUIScreen events to the right screen
@@ -45,6 +58,8 @@ function UI.Init()
 			SettingsScreen.Show()
 		elseif screenName == "Map" then
 			MapScreen.Show()
+		elseif screenName == "TalentTree" then
+			TalentTreeScreen.Show()
 		elseif screenName == "Founder" then
 			FounderScreen.Show()
 		end
