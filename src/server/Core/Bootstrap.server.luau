@@ -2,9 +2,15 @@
 -- Server bootstrap — loads all server-side systems for the beta.
 -- Lives in ServerScriptService.Server.Core.Bootstrap
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
+local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Server = ServerScriptService:WaitForChild("Server")
+
+-- Set up remotes first so systems can rely on them
+local RemotesSetup = require(Shared:WaitForChild("Remotes"):WaitForChild("RemotesSetup"))
+RemotesSetup.setup()
 
 -- Load order matters: DataStore -> RNG -> Reputation -> Combat -> SugarRush -> Guards -> Dungeon -> Quests -> Spawns
 local SYSTEMS = {
