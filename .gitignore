@@ -1,0 +1,28 @@
+# Roblox / Rojo
+*.rbxl
+*.rbxlx
+*.rbxl.lock
+*.rbxp
+*.rbxmx
+/_Index/
+/build/
+.sourcemap.json
+
+# Rojo live-sync temp
+/.rojo/
+
+# Aftman local installs (already in ~/.aftman but keep per-project out)
+/aftman.toml.local
+
+# Wally
+/wally.lock
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+
+# Editor
+.vscode/
+.idea/
