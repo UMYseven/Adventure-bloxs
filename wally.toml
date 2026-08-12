@@ -1,0 +1,8 @@
+[package]
+name = "fall/adventure-bloxs"
+version = "0.1.0"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+
+[dependencies]
+# fusion = "dphfox/fusion@0.3.0" -- not on Wally registry; using plain Luau UI via UiUtil theme module
