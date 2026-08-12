@@ -34,13 +34,25 @@ function UI.Init(variant: string?)
 	end
 	local openEvent = ReplicatedStorage:WaitForChild("OpenUIScreen")
 
-	-- Build the Figma-based screens (hidden until shown)
-	InventoryScreen.Init(v)
-	QuestLogScreen.Init(v)
-	SettingsScreen.Init(v)
-	MapScreen.Init(v)
-	DialogScreen.Init(v)
-	TalentTreeScreen.Init(v)
+	-- Build the Figma-based screens (hidden until shown).
+	-- Each Init is pcall'd so one broken screen can never kill the whole UI
+	-- system (which would also kill keybinds + the event dispatcher below).
+	local screens = {
+		{ name = "Inventory", module = InventoryScreen },
+		{ name = "QuestLog", module = QuestLogScreen },
+		{ name = "Settings", module = SettingsScreen },
+		{ name = "Map", module = MapScreen },
+		{ name = "Dialog", module = DialogScreen },
+		{ name = "TalentTree", module = TalentTreeScreen },
+	}
+	for _, s in ipairs(screens) do
+		local ok, err = pcall(function()
+			s.module.Init(v)
+		end)
+		if not ok then
+			warn(("[UI] %s Init failed: %s"):format(s.name, tostring(err)))
+		end
+	end
 
 	-- Pause menu (Esc) initializes its own input hook
 	PauseMenu.Init()
