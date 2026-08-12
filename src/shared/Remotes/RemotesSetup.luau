@@ -21,6 +21,9 @@ local function setup()
 	-- BindableEvent fired when a player's data is loaded (server-only)
 	ensure(ReplicatedStorage, "PlayerDataReady", "BindableEvent")
 
+	-- BindableEvent fired when a player's RNG roll is applied (server-only)
+	ensure(ReplicatedStorage, "RNGRolled", "BindableEvent")
+
 	-- RemoteEvent for client to request its own data snapshot
 	ensure(ReplicatedStorage, "RequestPlayerData", "RemoteFunction")
 
