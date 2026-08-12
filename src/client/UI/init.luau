@@ -48,20 +48,59 @@ function UI.Init(variant: string?)
 	-- UI keybinds (M=Map, I=Inventory, J=QuestLog, F=Settings, K=Talents, P=Founder)
 	Keybinds.Init()
 
-	-- Dispatch OpenUIScreen events to the right screen
+	-- Track which screens are currently open (for toggle behavior)
+	local openScreens: { [string]: boolean } = {}
+
+	-- Dispatch OpenUIScreen events to the right screen (toggle on/off)
 	openEvent.Event:Connect(function(screenName: string)
 		if screenName == "Inventory" then
-			InventoryScreen.Show()
+			if openScreens.Inventory then
+				InventoryScreen.Hide()
+				openScreens.Inventory = false
+			else
+				InventoryScreen.Show()
+				openScreens.Inventory = true
+			end
 		elseif screenName == "QuestLog" then
-			QuestLogScreen.Show()
+			if openScreens.QuestLog then
+				QuestLogScreen.Hide()
+				openScreens.QuestLog = false
+			else
+				QuestLogScreen.Show()
+				openScreens.QuestLog = true
+			end
 		elseif screenName == "Settings" then
-			SettingsScreen.Show()
+			if openScreens.Settings then
+				SettingsScreen.Hide()
+				openScreens.Settings = false
+			else
+				SettingsScreen.Show()
+				openScreens.Settings = true
+			end
 		elseif screenName == "Map" then
-			MapScreen.Show()
+			if openScreens.Map then
+				MapScreen.Hide()
+				openScreens.Map = false
+			else
+				MapScreen.Show()
+				openScreens.Map = true
+			end
 		elseif screenName == "TalentTree" then
-			TalentTreeScreen.Show()
+			if openScreens.TalentTree then
+				TalentTreeScreen.Hide()
+				openScreens.TalentTree = false
+			else
+				TalentTreeScreen.Show()
+				openScreens.TalentTree = true
+			end
 		elseif screenName == "Founder" then
-			FounderScreen.Show()
+			if openScreens.Founder then
+				FounderScreen.Hide()
+				openScreens.Founder = false
+			else
+				FounderScreen.Show()
+				openScreens.Founder = true
+			end
 		end
 	end)
 
