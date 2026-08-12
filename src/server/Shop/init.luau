@@ -8,7 +8,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
-local DataStore = require(ServerScriptService:WaitForChild("Server"):WaitForChild("DataStore"):WaitForChild("Init"))
+local DataStore = require(ServerScriptService:WaitForChild("Server"):WaitForChild("DataStore"))
 
 local Shop = {}
 

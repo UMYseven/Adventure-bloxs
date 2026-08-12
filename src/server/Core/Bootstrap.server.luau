@@ -26,6 +26,9 @@ local SYSTEMS = {
 	"Shop",
 }
 
+print("[Bootstrap] ===== SERVER BOOTSTRAP STARTING =====")
+print("[Bootstrap] RemotesSetup complete")
+
 for _, name in ipairs(SYSTEMS) do
 	local systemFolder = Server:FindFirstChild(name)
 	if not systemFolder then
@@ -33,14 +36,22 @@ for _, name in ipairs(SYSTEMS) do
 		continue
 	end
 
-	local initModule = systemFolder:FindFirstChild("Init")
+	-- With Rojo, a folder containing init.luau syncs AS a ModuleScript (the folder
+	-- itself is the module). Fall back to a child Init only if it stayed a Folder.
+	local initModule: Instance?
+	if systemFolder:IsA("ModuleScript") then
+		initModule = systemFolder
+	else
+		initModule = systemFolder:FindFirstChild("init") or systemFolder:FindFirstChild("Init")
+	end
 	if not initModule then
-		warn(("[Bootstrap] %s missing Init module"):format(name))
+		warn(("[Bootstrap] %s missing init module"):format(name))
 		continue
 	end
 
+	print(("[Bootstrap] Loading %s..."):format(name))
 	local ok, result = pcall(function()
-		return require(initModule)
+		return require(initModule :: ModuleScript)
 	end)
 	if not ok then
 		warn(("[Bootstrap] %s require error: %s"):format(name, tostring(result)))
@@ -61,4 +72,4 @@ for _, name in ipairs(SYSTEMS) do
 	end
 end
 
-print("[Bootstrap] server bootstrap complete")
+print("[Bootstrap] ===== SERVER BOOTSTRAP COMPLETE =====")

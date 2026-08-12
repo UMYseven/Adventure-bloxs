@@ -14,7 +14,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Constants = require(Shared:WaitForChild("Constants"):WaitForChild("GameConstants"))
-local DataStore = require(ServerScriptService:WaitForChild("Server"):WaitForChild("DataStore"):WaitForChild("Init"))
+local DataStore = require(ServerScriptService:WaitForChild("Server"):WaitForChild("DataStore"))
 
 local REPUTATION_TIERS = Constants.REPUTATION_TIERS
 

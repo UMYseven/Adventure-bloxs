@@ -12,7 +12,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 local Players = game:GetService("Players")
 
-local DataStore = require(ServerScriptService:WaitForChild("Server"):WaitForChild("DataStore"):WaitForChild("Init"))
+local DataStore = require(ServerScriptService:WaitForChild("Server"):WaitForChild("DataStore"))
 
 local Quests = {}
 
@@ -229,7 +229,7 @@ function Quests.Complete(player: Player, questId: string): boolean
 				data.gold += q.reward.gold
 			end
 			if q.reward.rep then
-				local reputation = require(ServerScriptService:WaitForChild("Server"):WaitForChild("Reputation"):WaitForChild("Init"))
+				local reputation = require(ServerScriptService:WaitForChild("Server"):WaitForChild("Reputation"))
 				reputation.Change(player, "CompleteQuest", q.reward.rep)
 			end
 			DataStore.Set(player.UserId, data)

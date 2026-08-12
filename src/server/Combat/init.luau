@@ -16,7 +16,7 @@ local Players = game:GetService("Players")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local CombatConstants = require(Shared:WaitForChild("Constants"):WaitForChild("CombatConstants"))
-local DataStore = require(ServerScriptService:WaitForChild("Server"):WaitForChild("DataStore"):WaitForChild("Init"))
+local DataStore = require(ServerScriptService:WaitForChild("Server"):WaitForChild("DataStore"))
 
 local CC = CombatConstants
 

@@ -10,7 +10,7 @@ local Workspace = game:GetService("Workspace")
 local Players = game:GetService("Players")
 local ServerScriptService = game:GetService("ServerScriptService")
 
-local Combat = require(ServerScriptService:WaitForChild("Server"):WaitForChild("Combat"):WaitForChild("Init"))
+local Combat = require(ServerScriptService:WaitForChild("Server"):WaitForChild("Combat"))
 
 local MobSpawner = {}
 

@@ -17,7 +17,7 @@ local Players = game:GetService("Players")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Constants = require(Shared:WaitForChild("Constants"):WaitForChild("GameConstants"))
-local DataStore = require(ServerScriptService:WaitForChild("Server"):WaitForChild("DataStore"):WaitForChild("Init"))
+local DataStore = require(ServerScriptService:WaitForChild("Server"):WaitForChild("DataStore"))
 
 local SUGAR_TIERS = Constants.SUGAR_RUSH_TIERS
 
@@ -179,7 +179,7 @@ local function onClientToServer(player: Player, action: string, _payload: any)
 	if action == "EatCandyPerson" then
 		SugarRush.EatCandy(player)
 		-- Also drop reputation
-		local reputation = require(ServerScriptService:WaitForChild("Server"):WaitForChild("Reputation"):WaitForChild("Init"))
+		local reputation = require(ServerScriptService:WaitForChild("Server"):WaitForChild("Reputation"))
 		reputation.Change(player, "EatCandyPerson")
 	end
 end

@@ -15,7 +15,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 
-local DataStore = require(ServerScriptService:WaitForChild("Server"):WaitForChild("DataStore"):WaitForChild("Init"))
+local DataStore = require(ServerScriptService:WaitForChild("Server"):WaitForChild("DataStore"))
 
 local Guards = {}
 
@@ -186,7 +186,7 @@ local function onBribe(player: Player, _payload: any)
 		data.gold -= cost
 		DataStore.Set(player.UserId, data)
 		-- Restore some reputation
-		local reputation = require(ServerScriptService:WaitForChild("Server"):WaitForChild("Reputation"):WaitForChild("Init"))
+		local reputation = require(ServerScriptService:WaitForChild("Server"):WaitForChild("Reputation"))
 		reputation.Change(player, "BribeBananaGuard")
 		print(("[Guards] %s bribed a guard (-%d gold)"):format(player.Name, cost))
 	end

@@ -4,7 +4,7 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local HUDGui = require(script.Parent:WaitForChild("HUDGui"))
+local HUDGui = require(script:WaitForChild("HUDGui"))
 
 local HUD = {}
 

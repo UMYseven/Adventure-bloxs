@@ -57,7 +57,17 @@ local function retryAsync(fn: () -> any): any
 end
 
 -- Load a player's data. Returns the stored data, or default if new.
+-- In Studio without DataStore access, returns fresh default data.
 function DataStore.LoadAsync(userId: number, username: string): any
+	-- In-memory mode (Studio without DataStore)
+	if not DataStore._store then
+		local fresh = deepCopy(DEFAULT_DATA)
+		fresh.userId = userId
+		fresh.username = username
+		fresh.lastSavedAt = os.time()
+		return fresh
+	end
+
 	local key = tostring(userId)
 	local data
 	local ok, err = pcall(function()
@@ -96,7 +106,12 @@ function DataStore.LoadAsync(userId: number, username: string): any
 end
 
 -- Save a player's data. Uses UpdateAsync for safe concurrent writes.
+-- In Studio without DataStore access, just returns true (in-memory only).
 function DataStore.SaveAsync(userId: number, data: any): boolean
+	if not DataStore._store then
+		return true -- in-memory mode, no-op
+	end
+
 	local key = tostring(userId)
 	local snapshot = deepCopy(data)
 	snapshot.lastSavedAt = os.time()
@@ -201,18 +216,29 @@ function DataStore.Init()
 		DataStoreService:SetRequestHooksEnabled(false)
 	end)
 
-	-- Open the store
-	DataStore._store = DataStoreService:GetDataStore(STORE_NAME)
+	-- Open the store — in Studio, DataStore may not be available. Fall back to in-memory only.
+	local ok, store = pcall(function()
+		return DataStoreService:GetDataStore(STORE_NAME)
+	end)
+	if ok and store then
+		DataStore._store = store
+		print("[DataStore] opened store: " .. STORE_NAME)
+	else
+		warn("[DataStore] DataStore unavailable (Studio without API access?) — running in-memory only. Data will NOT persist.")
+		DataStore._store = nil
+	end
 
 	-- Hook player lifecycle
 	Players.PlayerAdded:Connect(onPlayerAdded)
-		Players.PlayerRemoving:Connect(onPlayerRemoving)
+	Players.PlayerRemoving:Connect(onPlayerRemoving)
 
 	-- Hook server shutdown
 	game:BindToClose(onServerShutdown)
 
-	-- Start autosave
-	DataStore._autosaveThread = task.spawn(autosaveLoop)
+	-- Start autosave (only if we have a store)
+	if DataStore._store then
+		DataStore._autosaveThread = task.spawn(autosaveLoop)
+	end
 
 	-- Handle players already in game (studio play solo)
 	for _, player in ipairs(Players:GetPlayers()) do
