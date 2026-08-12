@@ -12,13 +12,16 @@ local SYSTEMS = {
 }
 
 for _, name in ipairs(SYSTEMS) do
-	local systemScript = script.Parent:FindFirstChild(name)
+	-- Systems are siblings of Core (which holds this Bootstrap), so look in script.Parent.Parent (the Client folder)
+	local systemScript = script.Parent.Parent:FindFirstChild(name)
 	if not systemScript then
+		warn(("[Client Bootstrap] system folder missing: %s"):format(name))
 		continue
 	end
 
 	local initModule = systemScript:FindFirstChild("Init")
 	if not initModule then
+		warn(("[Client Bootstrap] %s missing Init module"):format(name))
 		continue
 	end
 

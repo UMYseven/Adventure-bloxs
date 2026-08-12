@@ -6,6 +6,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local RNGScreen = require(script:WaitForChild("RNGScreen"))
 local PauseMenu = require(script:WaitForChild("PauseMenu"))
+local Keybinds = require(script:WaitForChild("Keybinds"))
 local InventoryScreen = require(script:WaitForChild("InventoryScreen"))
 local QuestLogScreen = require(script:WaitForChild("QuestLogScreen"))
 local SettingsScreen = require(script:WaitForChild("SettingsScreen"))
@@ -30,6 +31,9 @@ function UI.Init()
 
 	-- Pause menu (Esc) initializes its own input hook
 	PauseMenu.Init()
+
+	-- UI keybinds (M=Map, I=Inventory, J=QuestLog, F=Settings, P=Founder)
+	Keybinds.Init()
 
 	-- Dispatch OpenUIScreen events to the right screen
 	openEvent.Event:Connect(function(screenName: string)
