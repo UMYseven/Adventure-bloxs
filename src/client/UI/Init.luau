@@ -1,19 +1,74 @@
 --!strict
--- UI system — listens for RNG result and shows the character creation screen.
+-- UI system — listens for events and shows the appropriate screen.
 -- Lives in StarterPlayerScripts.Client.UI.Init
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local RNGScreen = require(script.Parent:WaitForChild("RNGScreen"))
+local RNGScreen = require(script:WaitForChild("RNGScreen"))
+local PauseMenu = require(script:WaitForChild("PauseMenu"))
+local InventoryScreen = require(script:WaitForChild("InventoryScreen"))
+local QuestLogScreen = require(script:WaitForChild("QuestLogScreen"))
+local SettingsScreen = require(script:WaitForChild("SettingsScreen"))
+local MapScreen = require(script:WaitForChild("MapScreen"))
+local DialogScreen = require(script:WaitForChild("DialogScreen"))
+local ShopScreen = require(script:WaitForChild("ShopScreen"))
+local DuelScreen = require(script:WaitForChild("DuelScreen"))
+local DeathScreen = require(script:WaitForChild("DeathScreen"))
+local FounderScreen = require(script:WaitForChild("FounderScreen"))
+local LichFinaleScreen = require(script:WaitForChild("LichFinaleScreen"))
 
 local UI = {}
 
 function UI.Init()
-	-- Listen for ServerToClient RNGResult event
+	-- Create the OpenUIScreen BindableEvent if missing
+	if not ReplicatedStorage:FindFirstChild("OpenUIScreen") then
+		local ev = Instance.new("BindableEvent")
+		ev.Name = "OpenUIScreen"
+		ev.Parent = ReplicatedStorage
+	end
+	local openEvent = ReplicatedStorage:WaitForChild("OpenUIScreen")
+
+	-- Pause menu (Esc) initializes its own input hook
+	PauseMenu.Init()
+
+	-- Dispatch OpenUIScreen events to the right screen
+	openEvent.Event:Connect(function(screenName: string)
+		if screenName == "Inventory" then
+			InventoryScreen.Show()
+		elseif screenName == "QuestLog" then
+			QuestLogScreen.Show()
+		elseif screenName == "Settings" then
+			SettingsScreen.Show()
+		elseif screenName == "Map" then
+			MapScreen.Show()
+		elseif screenName == "Founder" then
+			FounderScreen.Show()
+		end
+	end)
+
+	-- Listen for ServerToClient events that trigger UI
 	local s2c = ReplicatedStorage:WaitForChild("ServerToClient")
 	s2c.OnClientEvent:Connect(function(action: string, payload: any)
 		if action == "RNGResult" then
 			RNGScreen.Show(payload)
+		elseif action == "Dialog" then
+			DialogScreen.Show(payload)
+		elseif action == "ShopItems" then
+			ShopScreen.SetItems(payload)
+		elseif action == "ShopGold" then
+			ShopScreen.SetGold(payload)
+		elseif action == "InventoryItems" then
+			InventoryScreen.SetItems(payload)
+		elseif action == "Quests" then
+			QuestLogScreen.SetQuests(payload.active or {}, payload.completed or {})
+		elseif action == "DuelRequest" then
+			DuelScreen.Show(payload.challenger or "Unknown")
+		elseif action == "Death" then
+			DeathScreen.Show(payload)
+		elseif action == "FounderStatus" then
+			FounderScreen.SetStatus(payload.text or "", payload.success or false)
+		elseif action == "LichOmen" then
+			LichFinaleScreen.Show(payload.countdown)
 		end
 	end)
 
@@ -25,7 +80,6 @@ function UI.Init()
 				return requestFn:InvokeServer()
 			end)
 			if ok and type(result) == "table" and result.firstSpawn then
-				-- Server should also fire via ServerToClient, but as a fallback show directly
 				RNGScreen.Show({
 					race = result.race,
 					bloodline = result.bloodline,
