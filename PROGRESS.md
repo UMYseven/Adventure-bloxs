@@ -134,29 +134,41 @@ src/
 
 ## 5. What's done (✅)
 
-- All 6 design docs + ASSETS_NEEDED + this vault.
-- Rojo scaffold + toolchain (Rojo + Wally + Selene via Aftman).
-- Server bootstrap + client bootstrap.
+- All 6 design docs + ASSETS_NEEDED + PLACEHOLDERS_SWAP_LIST + this vault.
+- Rojo scaffold + toolchain (Rojo + Wally + Selene via Aftman). `wally.toml` present (Fusion not on Wally registry; using plain Luau UI via `UiUtil` + `Theme`).
+- Server bootstrap + client bootstrap (client bootstrap fixed to look in `Client` folder, not `Core`).
 - Shared constants (GameConstants + CombatConstants) matching locked GDD.
 - PlayerData type schema + DEFAULT.
-- RemotesSetup (PlayerDataReady, RNGRolled, RequestPlayerData, ClientToServer, ServerToClient).
-- DataStore system (LoadAsync, SaveAsync, autosave 60s, save-on-leave, save-on-shutdown, kick on load fail).
-- RNG system (server roller + client character creation screen with rolling animation + rarity colors).
-- HUD system (health, stamina, hero, sugar, XP, gold, reputation tier; tweened bars; listens for ServerToClient).
-- Combat core (server state, stamina regen, damage pipeline with dodge/block/parry, hero mode, death with 10% gold + XP debt; client input + VFX hook).
+- RemotesSetup (PlayerDataReady, RNGRolled, RequestPlayerData, ClientToServer, ServerToClient, OpenUIScreen).
+- **DataStore** — LoadAsync, SaveAsync, autosave 60s, save-on-leave, save-on-shutdown, kick on load fail.
+- **RNG** — server roller + client character creation screen with rolling animation + rarity colors.
+- **HUD** — health, stamina, hero, sugar, XP, gold, reputation tier; tweened bars; listens for ServerToClient.
+- **Combat core** — server state (HP, stamina, hero, combo, statuses), stamina regen, damage pipeline with dodge/block/parry, hero mode, death with 10% gold + XP debt; client input + VFX hook.
+- **Loading screen** — preload flow + fixed join order (preload → RNG → spawn).
+- **Reputation** — Candy Kingdom meter (-100 to +100), tier shifts (Beloved/Liked/Neutral/Disliked/Wanted/Hunted), change events (eat candy person, bribe guard, fight guard, escape dungeon, complete quest, etc.), broadcast to client.
+- **Sugar Rush** — 4 tiers (locked), eat candy → meter → buff (speed/strength/parkour) → crash → coma at tier 4. Hooks into combat + movement.
+- **Guards** — Banana Guard AI (patrol, chase at Wanted, attack on sight at Hunted, bribe/fight/sneak/impersonate stubs).
+- **Quests** — ~10 short beta quests with real objectives + rewards (PB, Starchy, Cinnamon Bun, etc.).
+- **Spawns** — placeholder Candy Kingdom + Grasslands geometry (castle, town square, houses, market, barracks, dungeon/vault entrances, locked gate, Tree Fort, camp, hilltop, outpost, river, wolf den, oak grove, mushfield) + **mob AI** (Wild Berry Wolf, Candy Bandit, Sugar Sprout, Mushroom — wander/aggro/attack/return).
+- **Camera** — client camera (default fixed, opt-in lock-on).
+- **Interaction** — environmental interaction stubs (push, break, climb, hide).
+- **Shop** — placeholder shop items (sword, pie, drink, hat, aura, reroll token) with buy logic + gold check.
+- **All UI screens** — RNG, HUD, Pause, Inventory, Quest Log, Settings, Map (27 locations: 9 active beta + 11 coming S1-S4 + 7 future S5-S6+), Dialog, Shop, Duel, Death, Founder, Lich Finale. All themed via `UiUtil` + `Theme`.
+- **Keybinds** — M=Map, I=Inventory, J=QuestLog, F=Settings, P=Founder, Esc=Pause.
 - All linting clean (0 errors, 0 warnings). All builds clean.
 
 ## 6. What's next (priority order)
 
-1. **Placeholder place geometry** — Candy Kingdom (castle, town square, residential, market, gates, dungeon entrance) + Grasslands (Tree Fort, camp, sub-areas) built from parts. (User picked this next.)
-2. **All UI** — inventory, quest log, settings, map, dialog/NPC talk, shop, pause menu, duel request, reputation panel, sugar rush indicator, death/respawn, fast-travel map, founder's pack redemption, Lich omen finale. Use Fusion (install via Wally) for cleaner component-based UI.
-3. **Reputation system** — Candy Kingdom meter, tier shifts, guard behavior hook.
-4. **Sugar Rush system** — eat candy → meter → tiers → buff/crash, hooks into combat + HUD.
-5. **Guards system** — Banana Guard AI (patrol, chase, bribe/fight/sneak/impersonate).
-6. **Dungeon system** — Banana Guard Dungeon (3-5 rooms, Warden boss, repeatable).
-7. **Quests system** — ~10 short beta quests.
-8. **Spawns system** — mob spawns across Candy Kingdom + Grasslands.
-9. **R16 rig setup** — 5 archetype base rigs + race signature pieces (needs 3D models from user).
+1. **Public asset import** — pull placeholder models from Roblox Toolbox (Candy Kingdom buildings, Grasslands terrain, R16 rigs, weapons, NPC models). Verify no embedded malicious scripts. Log each asset ID + source.
+2. **R16 rig setup** — 5 archetype base rigs + race signature pieces (needs 3D models from user or Toolbox).
+3. **Dungeon system** — Banana Guard Dungeon (3-5 rooms, Warden boss, repeatable).
+4. **Fast-travel logic** — make Map screen shrines actually teleport.
+5. **Duel system** — real duel arena + rules.
+6. **Founder's Pack redemption** — real code validation backend.
+7. **Lich omen finale event** — weekend event logic.
+8. **Weather + day/night cycle** — light cosmetic weather, clock + lighting.
+9. **Fishing minigame** — River Crossing fishing logic.
+10. **Mount system** — Battle Cube mount.
 10. **Camera system** — client camera (default fixed, opt-in lock-on).
 11. **Interaction system** — environmental (push, break, climb, hide).
 

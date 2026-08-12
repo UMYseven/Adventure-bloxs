@@ -12,7 +12,7 @@ local Server = ServerScriptService:WaitForChild("Server")
 local RemotesSetup = require(Shared:WaitForChild("Remotes"):WaitForChild("RemotesSetup"))
 RemotesSetup.setup()
 
--- Load order matters: DataStore -> RNG -> Reputation -> Combat -> SugarRush -> Guards -> Dungeon -> Quests -> Spawns
+-- Load order matters: DataStore -> RNG -> Reputation -> Combat -> SugarRush -> Guards -> Dungeon -> Quests -> Spawns -> Shop
 local SYSTEMS = {
 	"DataStore",
 	"RNG",
@@ -23,6 +23,7 @@ local SYSTEMS = {
 	"Dungeon",
 	"Quests",
 	"Spawns",
+	"Shop",
 }
 
 for _, name in ipairs(SYSTEMS) do
