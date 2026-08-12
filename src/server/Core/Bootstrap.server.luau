@@ -29,6 +29,14 @@ local SYSTEMS = {
 print("[Bootstrap] ===== SERVER BOOTSTRAP STARTING =====")
 print("[Bootstrap] RemotesSetup complete")
 
+-- Remove default Roblox baseplate (we build our own world)
+local Workspace = game:GetService("Workspace")
+local baseplate = Workspace:FindFirstChild("Baseplate")
+if baseplate then
+	baseplate:Destroy()
+	print("[Bootstrap] Removed default Baseplate")
+end
+
 for _, name in ipairs(SYSTEMS) do
 	local systemFolder = Server:FindFirstChild(name)
 	if not systemFolder then

@@ -36,7 +36,7 @@ local function makePart(props: {
 	return p
 end
 
--- Helper: make a spawn point
+-- Helper: make a spawn point (invisible — players spawn on the ground, not a platform)
 local function makeSpawn(name: string, position: Vector3, parent: Instance): SpawnLocation
 	local s = Instance.new("SpawnLocation")
 	s.Name = name
@@ -48,6 +48,8 @@ local function makeSpawn(name: string, position: Vector3, parent: Instance): Spa
 	s.Neutral = true
 	s.AllowTeamChangeOnTouch = false
 	s.Duration = 0
+	s.Transparency = 1 -- invisible
+	s.CanCollide = false -- no collision
 	s.Parent = parent or Workspace
 	return s
 end
